@@ -1,3 +1,70 @@
-import Link from "next/link"; import { AppNav } from "@/components/trips/app-nav"; import { requireUser } from "@/lib/auth/require-user"; import { listTrips } from "@/lib/trips/server"; import { createClient } from "@/lib/supabase/server"; import { formatTripDates } from "@/lib/trips/presentation";
-export const dynamic="force-dynamic";
-export default async function Dashboard(){const user=await requireUser("/dashboard");const s=await createClient();let trips=[];try{trips=await listTrips(s,user)}catch{}const next=trips[0];return <main className="trips-page"><AppNav/><div className="app-shell"><header className="app-hero"><span className="auth-eyebrow">Seu painel de viagem</span><h1>Pronto para a próxima aventura?</h1><p>Viagens, roteiro, preparação e alertas em um só lugar.</p><Link className="primary-trip-action" href="/trips/new">+ Planejar viagem</Link></header><section className="dashboard-grid"><article className="dashboard-feature"><span>Próxima viagem</span>{next?<><h2>{next.title||next.destination_city}</h2><p>{formatTripDates(next.start_date,next.end_date)}</p><Link href={`/trips/${next.id}`}>Abrir planejamento →</Link></>:<><h2>Nenhuma viagem ainda</h2><p>Crie uma viagem para começar seu planejamento.</p><Link href="/trips/new">Criar viagem →</Link></>}</article><article><span>Roteiros</span><h2>VivaTrip AI</h2><p>Roteiros editáveis adaptados ao seu ritmo, interesses e época da viagem.</p><Link href="/trips">Ver viagens →</Link></article><article><span>Preparação</span><h2>Pré-viagem</h2><p>Organize documentos, conectividade, dinheiro, transporte e checklist.</p><Link href="/trips">Escolher viagem →</Link></article><article><span>Economia</span><h2>Alertas</h2><p>Área preparada para acompanhar preços quando um provedor de voos for conectado.</p><Link href="/alerts">Ver alertas →</Link></article></section></div></main>}
+import Link from "next/link";
+import { AppNav } from "@/components/trips/app-nav";
+import { requireUser } from "@/lib/auth/require-user";
+import { listTrips } from "@/lib/trips/server";
+import { createClient } from "@/lib/supabase/server";
+import { formatTripDates } from "@/lib/trips/presentation";
+import type { Trip } from "@/types/trip";
+
+export const dynamic = "force-dynamic";
+
+export default async function Dashboard() {
+  const user = await requireUser("/dashboard");
+  const supabase = await createClient();
+  let trips: Trip[] = [];
+
+  try {
+    trips = await listTrips(supabase, user);
+  } catch {
+    // Keep the dashboard usable if trip data is temporarily unavailable.
+  }
+
+  const next = trips[0];
+
+  return (
+    <main className="trips-page">
+      <AppNav />
+      <div className="app-shell">
+        <header className="app-hero">
+          <span className="auth-eyebrow">Seu painel de viagem</span>
+          <h1>Pronto para a próxima aventura?</h1>
+          <p>Viagens, roteiro, preparação e alertas em um só lugar.</p>
+          <Link className="primary-trip-action" href="/trips/new">+ Planejar viagem</Link>
+        </header>
+        <section className="dashboard-grid">
+          <article className="dashboard-feature">
+            <span>Próxima viagem</span>
+            {next ? (
+              <>
+                <h2>{next.title || next.destination_city}</h2>
+                <p>{formatTripDates(next.start_date, next.end_date)}</p>
+                <Link href={`/trips/${next.id}`}>Abrir planejamento →</Link>
+              </>
+            ) : (
+              <>
+                <h2>Nenhuma viagem ainda</h2>
+                <p>Crie uma viagem para começar seu planejamento.</p>
+                <Link href="/trips/new">Criar viagem →</Link>
+              </>
+            )}
+          </article>
+          <article>
+            <span>Roteiros</span><h2>VivaTrip AI</h2>
+            <p>Roteiros editáveis adaptados ao seu ritmo, interesses e época da viagem.</p>
+            <Link href="/trips">Ver viagens →</Link>
+          </article>
+          <article>
+            <span>Preparação</span><h2>Pré-viagem</h2>
+            <p>Organize documentos, conectividade, dinheiro, transporte e checklist.</p>
+            <Link href="/trips">Escolher viagem →</Link>
+          </article>
+          <article>
+            <span>Economia</span><h2>Alertas</h2>
+            <p>Área preparada para acompanhar preços quando um provedor de voos for conectado.</p>
+            <Link href="/alerts">Ver alertas →</Link>
+          </article>
+        </section>
+      </div>
+    </main>
+  );
+}
