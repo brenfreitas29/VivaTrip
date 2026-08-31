@@ -27,7 +27,7 @@ export function AlertsManager({ initialAlerts }: { initialAlerts: FlightAlert[] 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const body: AlertApiResponse | null = await response.json().catch(() => null);
+      const body = (await response.json().catch(() => null)) as AlertApiResponse | null;
 
       if (response.status === 401) {
         location.href = "/login?next=/alerts";
@@ -36,7 +36,7 @@ export function AlertsManager({ initialAlerts }: { initialAlerts: FlightAlert[] 
       if (!response.ok) throw new Error(body?.error || "Não foi possível salvar.");
       if (!body?.alert) throw new Error("O servidor não retornou o alerta salvo.");
 
-      setAlerts((current) => [body.alert as FlightAlert, ...current]);
+      setAlerts((current) => [body.alert, ...current]);
       form.reset();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível salvar.");
