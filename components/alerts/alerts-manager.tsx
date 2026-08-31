@@ -34,9 +34,10 @@ export function AlertsManager({ initialAlerts }: { initialAlerts: FlightAlert[] 
         return;
       }
       if (!response.ok) throw new Error(body?.error || "Não foi possível salvar.");
-      if (!body?.alert) throw new Error("O servidor não retornou o alerta salvo.");
+      const savedAlert = body?.alert;
+      if (!savedAlert) throw new Error("O servidor não retornou o alerta salvo.");
 
-      setAlerts((current) => [body.alert, ...current]);
+      setAlerts((current) => [savedAlert, ...current]);
       form.reset();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível salvar.");
