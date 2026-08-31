@@ -1,0 +1,12 @@
+"use client";
+import { useMemo, useState } from "react";
+import { PRETRIP_CATALOG } from "@/lib/pretrip/catalog";
+import type { PretripItem, PretripKey } from "@/types/pretrip";
+
+export function PretripChecklist({tripId,initialItems}:{tripId:string;initialItems:PretripItem[]}){
+  const [items,setItems]=useState(initialItems);const [saving,setSaving]=useState<PretripKey|null>(null);const [error,setError]=useState("");
+  const map=useMemo(()=>new Map(items.map(i=>[i.item_key,i])),[items]);
+  const completed=PRETRIP_CATALOG.filter(i=>map.get(i.key)?.completed).length;
+  async function toggle(key:PretripKey){const current=map.get(key);const next=!current?.completed;setSaving(key);setError("");try{const response=await fetch(`/api/trips/${tripId}/checklist`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({item_key:key,completed:next,notes:current?.notes??null})});const body=await response.json().catch(()=>null);if(response.status===401){window.location.href=`/login?next=${encodeURIComponent(`/trips/${tripId}`)}`;return;}if(!response.ok)throw new Error(body?.error||"Não foi possível salvar.");setItems(prev=>[...prev.filter(i=>i.item_key!==key),body.item]);}catch(e){setError(e instanceof Error?e.message:"Não foi possível salvar.");}finally{setSaving(null);}}
+  return <section className="pretrip-section" aria-label="Pré-viagem"><div className="pretrip-heading"><span className="auth-eyebrow">Pré-viagem</span><h2>Prepare o essencial antes de embarcar</h2><p>Marque o que já resolveu. Requisitos oficiais de entrada dependem do seu passaporte, residência, destino e datas e devem ser confirmados em fontes oficiais.</p><div className="pretrip-progress" aria-label={`${completed} de ${PRETRIP_CATALOG.length} itens concluídos`}><div><span style={{width:`${completed/PRETRIP_CATALOG.length*100}%`}} /></div><strong>{completed}/{PRETRIP_CATALOG.length} concluídos</strong></div></div>{error?<p className="trips-error" role="alert">{error}</p>:null}<div className="pretrip-grid">{PRETRIP_CATALOG.map(entry=>{const done=Boolean(map.get(entry.key)?.completed);return <article key={entry.key} className={done?"completed":""}><button type="button" className="pretrip-check" aria-pressed={done} aria-label={`${done?"Desmarcar":"Marcar"} ${entry.title}`} disabled={saving===entry.key} onClick={()=>toggle(entry.key)}>{saving===entry.key?"…":done?"✓":""}</button><h3>{entry.title}</h3><p>{entry.description}</p></article>})}</div></section>
+}

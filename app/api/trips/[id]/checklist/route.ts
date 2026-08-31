@@ -1,0 +1,9 @@
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { getTrip } from "@/lib/trips/server";
+import { listPretripItems, upsertPretripItem } from "@/lib/pretrip/server";
+import { PRETRIP_KEYS, type PretripKey } from "@/types/pretrip";
+
+async function context(id:string){const supabase=await createClient();const {data,error}=await supabase.auth.getUser();const user=error?null:data.user;if(!user)return {supabase,user:null,trip:null};const trip=await getTrip(supabase,user,id);return {supabase,user,trip};}
+export async function GET(_request:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;const {supabase,user,trip}=await context(id);if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});if(!trip)return NextResponse.json({error:"Viagem não encontrada."},{status:404});try{return NextResponse.json({items:await listPretripItems(supabase,user,id)});}catch{return NextResponse.json({error:"Checklist indisponível agora."},{status:503});}}
+export async function PUT(request:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;const {supabase,user,trip}=await context(id);if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});if(!trip)return NextResponse.json({error:"Viagem não encontrada."},{status:404});const body=await request.json().catch(()=>null) as {item_key?:string;completed?:boolean;notes?:string|null}|null;if(!body||typeof body.item_key!=="string"||!PRETRIP_KEYS.includes(body.item_key as PretripKey)||typeof body.completed!=="boolean")return NextResponse.json({error:"Dados inválidos."},{status:400});const notes=typeof body.notes==="string"?body.notes.trim().slice(0,500)||null:null;try{return NextResponse.json({item:await upsertPretripItem(supabase,user,id,body.item_key as PretripKey,body.completed,notes)});}catch{return NextResponse.json({error:"Não foi possível salvar o checklist."},{status:503});}}

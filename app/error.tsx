@@ -1,0 +1,2 @@
+"use client";
+export default function GlobalError({reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="fatal-state"><div><span className="brand-mark">VT</span><h1>Algo não saiu como esperado</h1><p>Seus dados não foram apagados. Tente carregar esta área novamente.</p><button type="button" className="primary-trip-action" onClick={reset}>Tentar novamente</button><a className="secondary-action" href="/dashboard">Voltar ao painel</a></div></main>}
