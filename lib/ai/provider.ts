@@ -15,14 +15,25 @@ export class AIProviderError extends Error {
 
 const AI_REQUEST_TIMEOUT_MS = 55_000;
 const OPENAI_DEFAULT_MODEL = "gpt-5.6-luna";
+const GEMINI_DEFAULT_MODEL = "gemini-3.1-flash-lite";
 
 function openAIKey() {
   return process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
 }
 
+function configuredModel() {
+  return process.env.AI_MODEL?.trim() || "";
+}
+
 function resolvedOpenAIModel() {
-  const configured = process.env.AI_MODEL?.trim();
-  if (!configured || configured === "gpt-5.4") return OPENAI_DEFAULT_MODEL;
+  const configured = configuredModel();
+  if (!configured || configured === "gpt-5.4" || configured.startsWith("gemini-")) return OPENAI_DEFAULT_MODEL;
+  return configured;
+}
+
+function resolvedGeminiModel() {
+  const configured = configuredModel();
+  if (!configured || configured.startsWith("gpt-")) return GEMINI_DEFAULT_MODEL;
   return configured;
 }
 
@@ -90,6 +101,7 @@ class OpenAIProvider implements AIProvider {
         param: body.error?.param || null,
         model: this.model,
       });
+      if (response.status === 400 && providerCode === "model_not_found") throw new AIProviderError("O modelo configurado não pertence à OpenAI. O VivaTrip aplicará o modelo padrão no próximo deploy.", "upstream");
       if (response.status === 400) throw new AIProviderError("A configuração da resposta estruturada da IA foi rejeitada. O erro foi registrado para correção.", "upstream");
       if (response.status === 401) throw new AIProviderError("A chave da OpenAI não foi aceita. Verifique a chave configurada na Vercel.", "upstream");
       if (response.status === 403) throw new AIProviderError("A chave da OpenAI não tem permissão para usar o modelo configurado.", "upstream");
@@ -118,7 +130,7 @@ class GeminiProvider implements AIProvider {
   readonly model: string;
 
   constructor(private readonly apiKey: string, model?: string) {
-    this.model = model || "gemini-3.1-flash-lite";
+    this.model = model || GEMINI_DEFAULT_MODEL;
   }
 
   async generateStructuredItinerary(instructions: string, input: unknown) {
@@ -171,9 +183,7 @@ function resolvedProviderName() {
 
 export function aiConfiguration() {
   const provider = resolvedProviderName();
-  const model = provider === "gemini"
-    ? process.env.AI_MODEL?.trim() || "gemini-3.1-flash-lite"
-    : resolvedOpenAIModel();
+  const model = provider === "gemini" ? resolvedGeminiModel() : resolvedOpenAIModel();
   const configured = provider === "gemini"
     ? Boolean(process.env.GEMINI_API_KEY?.trim())
     : provider === "openai" && Boolean(openAIKey());
