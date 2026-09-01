@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { LanguageProvider } from '@/components/i18n/language-provider';
+import { SiteTranslationLayer } from '@/components/i18n/site-translation-layer';
 import './globals.css';
 
 const geistSans = Geist({
@@ -39,7 +40,10 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <LanguageProvider>{children}</LanguageProvider>
+        <LanguageProvider>
+          <SiteTranslationLayer />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
