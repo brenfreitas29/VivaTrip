@@ -14,9 +14,16 @@ export class AIProviderError extends Error {
 }
 
 const AI_REQUEST_TIMEOUT_MS = 55_000;
+const OPENAI_DEFAULT_MODEL = "gpt-5.6-luna";
 
 function openAIKey() {
   return process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
+}
+
+function resolvedOpenAIModel() {
+  const configured = process.env.AI_MODEL?.trim();
+  if (!configured || configured === "gpt-5.4") return OPENAI_DEFAULT_MODEL;
+  return configured;
 }
 
 async function fetchWithTimeout(url: string, init: RequestInit) {
@@ -47,7 +54,7 @@ class OpenAIProvider implements AIProvider {
   readonly model: string;
 
   constructor(private readonly apiKey: string, model?: string) {
-    this.model = model || "gpt-5.4";
+    this.model = model || OPENAI_DEFAULT_MODEL;
   }
 
   async generateStructuredItinerary(instructions: string, input: unknown) {
@@ -71,14 +78,18 @@ class OpenAIProvider implements AIProvider {
     });
 
     const body = await readJson(response) as {
-      error?: { message?: string };
+      error?: { message?: string; code?: string; type?: string };
       output?: { content?: { type?: string; text?: string }[] }[];
     };
 
     if (!response.ok) {
-      throw new AIProviderError(response.status === 429
-        ? "A VivaTrip AI está recebendo muitas solicitações agora. Aguarde um pouco e tente novamente."
-        : "A VivaTrip AI não conseguiu gerar o roteiro agora.", "upstream");
+      const providerCode = body.error?.code || body.error?.type || "";
+      if (response.status === 401) throw new AIProviderError("A chave da OpenAI não foi aceita. Verifique a chave configurada na Vercel.", "upstream");
+      if (response.status === 403) throw new AIProviderError("A chave da OpenAI não tem permissão para usar o modelo configurado.", "upstream");
+      if (response.status === 404) throw new AIProviderError("O modelo de IA configurado não está disponível. O VivaTrip já possui um modelo padrão compatível para o próximo deploy.", "upstream");
+      if (response.status === 429 && providerCode === "insufficient_quota") throw new AIProviderError("A conta da OpenAI está sem créditos de API disponíveis. Adicione créditos à conta da API e tente novamente.", "upstream");
+      if (response.status === 429) throw new AIProviderError("A VivaTrip AI está recebendo muitas solicitações agora. Aguarde um pouco e tente novamente.", "upstream");
+      throw new AIProviderError("A VivaTrip AI não conseguiu gerar o roteiro agora.", "upstream");
     }
 
     const output = body.output
@@ -153,12 +164,14 @@ function resolvedProviderName() {
 
 export function aiConfiguration() {
   const provider = resolvedProviderName();
-  const defaultModel = provider === "gemini" ? "gemini-3.1-flash-lite" : "gpt-5.4";
+  const model = provider === "gemini"
+    ? process.env.AI_MODEL?.trim() || "gemini-3.1-flash-lite"
+    : resolvedOpenAIModel();
   const configured = provider === "gemini"
     ? Boolean(process.env.GEMINI_API_KEY?.trim())
     : provider === "openai" && Boolean(openAIKey());
 
-  return { provider, model: process.env.AI_MODEL || defaultModel, configured };
+  return { provider, model, configured };
 }
 
 export function getAIProvider(): AIProvider {
