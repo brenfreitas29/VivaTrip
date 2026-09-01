@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import {
   COUNTRY_CODES,
   PROFILE_CURRENCIES,
@@ -33,6 +34,7 @@ function emptyProfile(name: string): ProfileInput {
 }
 
 export function ProfileForm({ email, initialName }: { email: string; initialName: string }) {
+  const { localeTag, setLocale } = useLanguage();
   const [profile, setProfile] = useState<ProfileInput>(() => emptyProfile(initialName));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,10 +43,10 @@ export function ProfileForm({ email, initialName }: { email: string; initialName
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const countries = useMemo(() => {
-    const displayNames = new Intl.DisplayNames(["pt-BR"], { type: "region" });
+    const displayNames = new Intl.DisplayNames([localeTag], { type: "region" });
     return COUNTRY_CODES.map((code) => ({ code, name: displayNames.of(code) || code }))
-      .sort((a, b) => a.name.localeCompare(b.name, "pt-BR"));
-  }, []);
+      .sort((a, b) => a.name.localeCompare(b.name, localeTag));
+  }, [localeTag]);
 
   useEffect(() => {
     void fetch("/api/profile", { cache: "no-store" })
@@ -70,6 +72,11 @@ export function ProfileForm({ email, initialName }: { email: string; initialName
     setProfile((current) => ({ ...current, [key]: value }));
     setFieldErrors((current) => ({ ...current, [key]: undefined }));
     setMessage("");
+  }
+
+  function changePreferredLanguage(value: ProfileInput["preferred_language"]) {
+    change("preferred_language", value);
+    setLocale(value);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -134,7 +141,7 @@ export function ProfileForm({ email, initialName }: { email: string; initialName
       <section className="profile-section">
         <div className="profile-section-heading"><span>03</span><div><h2>Configurações</h2><p>Idioma e moeda que você prefere usar.</p></div></div>
         <div className="profile-fields two-columns">
-          <label><span>Idioma preferido</span><select value={profile.preferred_language} onChange={(event) => change("preferred_language", event.target.value as ProfileInput["preferred_language"])}>{PROFILE_LANGUAGES.map((language) => <option key={language} value={language}>{languageLabels[language]}</option>)}</select></label>
+          <label><span>Idioma preferido</span><select value={profile.preferred_language} onChange={(event) => changePreferredLanguage(event.target.value as ProfileInput["preferred_language"])}>{PROFILE_LANGUAGES.map((language) => <option key={language} value={language}>{languageLabels[language]}</option>)}</select></label>
           <label><span>Moeda preferida</span><select value={profile.currency} onChange={(event) => change("currency", event.target.value as ProfileInput["currency"])}>{PROFILE_CURRENCIES.map((currency) => <option key={currency}>{currency}</option>)}</select></label>
         </div>
       </section>
