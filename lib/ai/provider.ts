@@ -15,6 +15,10 @@ export class AIProviderError extends Error {
 
 const AI_REQUEST_TIMEOUT_MS = 55_000;
 
+function openAIKey() {
+  return process.env.AI_API_KEY?.trim() || process.env.OPENAI_API_KEY?.trim() || "";
+}
+
 async function fetchWithTimeout(url: string, init: RequestInit) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
@@ -72,7 +76,6 @@ class OpenAIProvider implements AIProvider {
     };
 
     if (!response.ok) {
-      // Do not surface raw provider details to the traveler. They may contain account/configuration information.
       throw new AIProviderError(response.status === 429
         ? "A VivaTrip AI está recebendo muitas solicitações agora. Aguarde um pouco e tente novamente."
         : "A VivaTrip AI não conseguiu gerar o roteiro agora.", "upstream");
@@ -138,18 +141,22 @@ class GeminiProvider implements AIProvider {
 
 function resolvedProviderName() {
   const explicit = process.env.AI_PROVIDER?.trim().toLowerCase();
-  if (explicit) return explicit;
-  if (process.env.AI_API_KEY) return "openai";
-  if (process.env.GEMINI_API_KEY) return "gemini";
-  return "openai";
+  const hasOpenAI = Boolean(openAIKey());
+  const hasGemini = Boolean(process.env.GEMINI_API_KEY?.trim());
+
+  if (explicit === "openai" && hasOpenAI) return "openai";
+  if (explicit === "gemini" && hasGemini) return "gemini";
+  if (hasOpenAI) return "openai";
+  if (hasGemini) return "gemini";
+  return explicit || "openai";
 }
 
 export function aiConfiguration() {
   const provider = resolvedProviderName();
   const defaultModel = provider === "gemini" ? "gemini-3.1-flash-lite" : "gpt-5.4";
   const configured = provider === "gemini"
-    ? Boolean(process.env.GEMINI_API_KEY)
-    : provider === "openai" && Boolean(process.env.AI_API_KEY);
+    ? Boolean(process.env.GEMINI_API_KEY?.trim())
+    : provider === "openai" && Boolean(openAIKey());
 
   return { provider, model: process.env.AI_MODEL || defaultModel, configured };
 }
@@ -157,12 +164,14 @@ export function aiConfiguration() {
 export function getAIProvider(): AIProvider {
   const config = aiConfiguration();
   if (config.provider === "gemini") {
-    if (!process.env.GEMINI_API_KEY) throw new AIConfigurationError("A geração com IA ainda não foi configurada.");
-    return new GeminiProvider(process.env.GEMINI_API_KEY, config.model);
+    const key = process.env.GEMINI_API_KEY?.trim();
+    if (!key) throw new AIConfigurationError("A geração com IA ainda não foi configurada.");
+    return new GeminiProvider(key, config.model);
   }
   if (config.provider === "openai") {
-    if (!process.env.AI_API_KEY) throw new AIConfigurationError("A geração com IA ainda não foi configurada.");
-    return new OpenAIProvider(process.env.AI_API_KEY, config.model);
+    const key = openAIKey();
+    if (!key) throw new AIConfigurationError("A geração com IA ainda não foi configurada.");
+    return new OpenAIProvider(key, config.model);
   }
   throw new AIConfigurationError("O provedor de IA configurado não é suportado.");
 }
