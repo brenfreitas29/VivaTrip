@@ -63,7 +63,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.locale = locale;
 
     document.querySelectorAll("select.language-select:not([data-global-language])").forEach((element) => {
-      const select = element as HTMLSelectElement;
+      const select = element as unknown as { value: string; dispatchEvent: (event: Event) => boolean };
       if (select.value !== locale) {
         select.value = locale;
         select.dispatchEvent(new Event("change", { bubbles: true }));
