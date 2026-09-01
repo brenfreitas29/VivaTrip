@@ -1,7 +1,9 @@
 import { ITINERARY_CATEGORIES, ITINERARY_PERIODS, type GeneratedItinerary } from "@/types/itinerary";
 
 const nullableString = { anyOf: [{ type: "string" }, { type: "null" }] } as const;
-const nullableTime = { anyOf: [{ type: "string", pattern: "^([01]\\d|2[0-3]):[0-5]\\d$" }, { type: "null" }] } as const;
+// Keep provider schema to the Structured Outputs supported subset. Exact formats and
+// numeric ranges are enforced again by validateGeneratedItinerary below.
+const nullableTime = { anyOf: [{ type: "string" }, { type: "null" }] } as const;
 
 export const ITINERARY_JSON_SCHEMA = {
   type: "object",
@@ -17,8 +19,8 @@ export const ITINERARY_JSON_SCHEMA = {
         additionalProperties: false,
         required: ["dayNumber", "date", "title", "summary", "notes", "items"],
         properties: {
-          dayNumber: { type: "integer", minimum: 1 },
-          date: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
+          dayNumber: { type: "integer" },
+          date: { type: "string" },
           title: { type: "string" },
           summary: nullableString,
           notes: nullableString,
@@ -37,7 +39,7 @@ export const ITINERARY_JSON_SCHEMA = {
                 locationName: nullableString,
                 locationAddress: { type: "null" },
                 category: { type: "string", enum: ITINERARY_CATEGORIES },
-                estimatedDurationMinutes: { anyOf: [{ type: "integer", minimum: 15, maximum: 720 }, { type: "null" }] },
+                estimatedDurationMinutes: { anyOf: [{ type: "integer" }, { type: "null" }] },
                 estimatedCost: { type: "null" },
                 currency: { type: "null" },
                 notes: nullableString,
@@ -73,10 +75,13 @@ export function validateGeneratedItinerary(value: unknown, expectedDates: string
       const duration = item.estimatedDurationMinutes;
       if (duration !== null && (!Number.isInteger(duration) || Number(duration) < 15 || Number(duration) > 720)) throw new Error("Duração inválida no roteiro.");
       if (item.estimatedCost !== null || item.currency !== null || item.locationAddress !== null) throw new Error("O roteiro contém fatos operacionais não verificados.");
+      const startTime = item.startTime === null ? null : text(item.startTime, 5);
+      const endTime = item.endTime === null ? null : text(item.endTime, 5);
+      if ((startTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime)) || (endTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime))) throw new Error("Horário inválido no roteiro.");
       return {
         period: item.period as GeneratedItinerary["days"][number]["items"][number]["period"],
-        startTime: item.startTime === null ? null : text(item.startTime, 5),
-        endTime: item.endTime === null ? null : text(item.endTime, 5),
+        startTime,
+        endTime,
         title: text(item.title, 160),
         description: item.description === null ? null : text(item.description, 1200),
         locationName: item.locationName === null ? null : text(item.locationName, 200),
