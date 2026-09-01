@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { COUNTRY_CODES } from "@/types/profile";
 
 type FeaturedDestination = { city: string; countryCode: string; text: string; image: string };
@@ -25,8 +26,9 @@ function normalize(value: string) { return value.normalize("NFD").replace(/[\u03
 
 export function DestinationExplorer() {
   const [query, setQuery] = useState("");
-  const names = useMemo(() => new Intl.DisplayNames(["pt-BR"], { type: "region" }), []);
-  const countries = useMemo(() => COUNTRY_CODES.map((code) => ({ code, name: names.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR")), [names]);
+  const { localeTag } = useLanguage();
+  const names = useMemo(() => new Intl.DisplayNames([localeTag], { type: "region" }), [localeTag]);
+  const countries = useMemo(() => COUNTRY_CODES.map((code) => ({ code, name: names.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, localeTag)), [names, localeTag]);
   const normalized = normalize(query.trim());
   const filteredFeatured = featured.filter((place) => !normalized || normalize(`${place.city} ${names.of(place.countryCode) || place.countryCode}`).includes(normalized));
   const filteredCountries = countries.filter((country) => !normalized || normalize(country.name).includes(normalized)).slice(0, normalized ? 24 : 12);
