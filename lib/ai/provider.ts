@@ -78,16 +78,23 @@ class OpenAIProvider implements AIProvider {
     });
 
     const body = await readJson(response) as {
-      error?: { message?: string; code?: string; type?: string };
+      error?: { message?: string; code?: string; type?: string; param?: string };
       output?: { content?: { type?: string; text?: string }[] }[];
     };
 
     if (!response.ok) {
       const providerCode = body.error?.code || body.error?.type || "";
+      console.error("[VivaTrip AI] OpenAI request failed", {
+        status: response.status,
+        code: providerCode || "unknown",
+        param: body.error?.param || null,
+        model: this.model,
+      });
+      if (response.status === 400) throw new AIProviderError("A configuração da resposta estruturada da IA foi rejeitada. O erro foi registrado para correção.", "upstream");
       if (response.status === 401) throw new AIProviderError("A chave da OpenAI não foi aceita. Verifique a chave configurada na Vercel.", "upstream");
       if (response.status === 403) throw new AIProviderError("A chave da OpenAI não tem permissão para usar o modelo configurado.", "upstream");
-      if (response.status === 404) throw new AIProviderError("O modelo de IA configurado não está disponível. O VivaTrip já possui um modelo padrão compatível para o próximo deploy.", "upstream");
-      if (response.status === 429 && providerCode === "insufficient_quota") throw new AIProviderError("A conta da OpenAI está sem créditos de API disponíveis. Adicione créditos à conta da API e tente novamente.", "upstream");
+      if (response.status === 404) throw new AIProviderError("O modelo de IA configurado não está disponível.", "upstream");
+      if (response.status === 429 && providerCode === "insufficient_quota") throw new AIProviderError("A conta da OpenAI está sem créditos de API disponíveis.", "upstream");
       if (response.status === 429) throw new AIProviderError("A VivaTrip AI está recebendo muitas solicitações agora. Aguarde um pouco e tente novamente.", "upstream");
       throw new AIProviderError("A VivaTrip AI não conseguiu gerar o roteiro agora.", "upstream");
     }
