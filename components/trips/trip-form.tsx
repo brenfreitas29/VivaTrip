@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/components/i18n/language-provider";
 import { validateTripInput } from "@/lib/trips/validation";
 import { COUNTRY_CODES } from "@/types/profile";
 import { BUDGET_LEVELS, TRIP_INTERESTS, TRIP_STATUSES, TRIP_STYLES, type Trip, type TripInput } from "@/types/trip";
@@ -20,9 +21,10 @@ function initialTrip(trip?: Trip, destination?: InitialDestination): TripInput {
 
 export function TripForm({ trip, onSaved, initialDestination }: { trip?: Trip; onSaved?: (trip: Trip) => void; initialDestination?: InitialDestination }) {
   const router = useRouter();
+  const { localeTag } = useLanguage();
   const [form, setForm] = useState<TripInput>(() => initialTrip(trip, initialDestination));
   const [errors, setErrors] = useState<Errors>({}); const [message, setMessage] = useState(""); const [saving, setSaving] = useState(false);
-  const countries = useMemo(() => { const names = new Intl.DisplayNames(["pt-BR"], { type: "region" }); return COUNTRY_CODES.map((code) => ({ code, name: names.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, "pt-BR")); }, []);
+  const countries = useMemo(() => { const names = new Intl.DisplayNames([localeTag], { type: "region" }); return COUNTRY_CODES.map((code) => ({ code, name: names.of(code) || code })).sort((a, b) => a.name.localeCompare(b.name, localeTag)); }, [localeTag]);
   function change<K extends keyof TripInput>(key: K, value: TripInput[K]) { setForm((current) => ({ ...current, [key]: value })); setErrors((current) => ({ ...current, [key]: undefined })); setMessage(""); }
   function toggleInterest(interest: (typeof TRIP_INTERESTS)[number]) { change("interests", form.interests.includes(interest) ? form.interests.filter((item) => item !== interest) : [...form.interests, interest]); }
   function fieldError(key: keyof TripInput) { return errors[key] ? `${String(key)}-error` : undefined; }
