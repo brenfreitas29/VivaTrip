@@ -19,9 +19,13 @@ export type FlightSearchResult = {
   returnDate?: string;
   amount?: number;
   currency?: string;
+  originalAmount?: number;
+  originalCurrency?: string;
   miles?: number;
   taxes?: number;
   taxesCurrency?: string;
+  originalTaxes?: number;
+  originalTaxesCurrency?: string;
   cabin?: string;
   direct?: boolean;
   bookingUrl?: string;
@@ -40,6 +44,32 @@ function cleanAirport(value: string) {
 function safeNumber(value: unknown) {
   const n = Number(value);
   return Number.isFinite(n) ? n : undefined;
+}
+
+const fxCache = new Map<string, { rate: number; expires: number }>();
+
+async function convertToUsd(amount: number | undefined, currency: string | undefined) {
+  if (amount === undefined) return undefined;
+  const code = String(currency || 'USD').toUpperCase();
+  if (code === 'USD') return Math.round(amount * 100) / 100;
+
+  const cached = fxCache.get(code);
+  if (cached && cached.expires > Date.now()) return Math.round(amount * cached.rate * 100) / 100;
+
+  try {
+    const response = await fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(code)}/USD`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(4500),
+    });
+    if (!response.ok) return undefined;
+    const data = await response.json() as { rate?: number };
+    const rate = safeNumber(data.rate);
+    if (!rate) return undefined;
+    fxCache.set(code, { rate, expires: Date.now() + 6 * 60 * 60 * 1000 });
+    return Math.round(amount * rate * 100) / 100;
+  } catch {
+    return undefined;
+  }
 }
 
 async function searchDuffel(input: FlightSearchInput): Promise<FlightSearchResult[]> {
@@ -68,10 +98,14 @@ async function searchDuffel(input: FlightSearchInput): Promise<FlightSearchResul
   const payload = await response.json() as { data?: { offers?: Array<Record<string, unknown>> } };
   const offers = payload.data?.offers || [];
 
-  return offers.slice(0, 30).map((offer, index) => {
+  return Promise.all(offers.slice(0, 30).map(async (offer, index) => {
     const owner = offer.owner as { name?: string } | undefined;
     const slicesData = offer.slices as Array<{ segments?: Array<{ marketing_carrier?: { name?: string } }> }> | undefined;
     const airline = owner?.name || slicesData?.[0]?.segments?.[0]?.marketing_carrier?.name;
+    const originalAmount = safeNumber(offer.total_amount);
+    const originalCurrency = typeof offer.total_currency === 'string' ? offer.total_currency.toUpperCase() : undefined;
+    const usdAmount = await convertToUsd(originalAmount, originalCurrency);
+
     return {
       id: `duffel-${String(offer.id || index)}`,
       kind: 'cash' as const,
@@ -81,11 +115,13 @@ async function searchDuffel(input: FlightSearchInput): Promise<FlightSearchResul
       destination: input.destination,
       departureDate: input.departureDate,
       returnDate: input.returnDate,
-      amount: safeNumber(offer.total_amount),
-      currency: typeof offer.total_currency === 'string' ? offer.total_currency : undefined,
+      amount: usdAmount ?? originalAmount,
+      currency: usdAmount !== undefined ? 'USD' : originalCurrency,
+      originalAmount,
+      originalCurrency,
       cabin: input.cabin || 'economy',
     };
-  });
+  }));
 }
 
 async function amadeusToken() {
@@ -112,7 +148,7 @@ async function searchAmadeus(input: FlightSearchInput): Promise<FlightSearchResu
     destinationLocationCode: input.destination,
     departureDate: input.departureDate,
     adults: String(input.adults),
-    currencyCode: process.env.FLIGHT_SEARCH_CURRENCY?.trim() || 'USD',
+    currencyCode: 'USD',
     max: '30',
   });
   if (input.returnDate) params.set('returnDate', input.returnDate);
@@ -140,7 +176,9 @@ async function searchAmadeus(input: FlightSearchInput): Promise<FlightSearchResu
       departureDate: input.departureDate,
       returnDate: input.returnDate,
       amount: safeNumber(price?.grandTotal),
-      currency: price?.currency,
+      currency: 'USD',
+      originalAmount: safeNumber(price?.grandTotal),
+      originalCurrency: price?.currency || 'USD',
       cabin: input.cabin || 'economy',
       direct: segments.length === 1,
     };
@@ -166,13 +204,20 @@ async function searchSeatsAero(input: FlightSearchInput): Promise<FlightSearchRe
   const payload = await response.json() as { data?: Array<Record<string, unknown>> };
   const cabinPrefix = input.cabin === 'business' ? 'J' : input.cabin === 'first' ? 'F' : input.cabin === 'premium_economy' ? 'W' : 'Y';
 
-  return (payload.data || []).flatMap((item, index) => {
+  const rows = await Promise.all((payload.data || []).map(async (item, index) => {
     const route = item.Route as { OriginAirport?: string; DestinationAirport?: string; Source?: string } | undefined;
     const available = item[`${cabinPrefix}Available`] === true;
     const miles = safeNumber(item[`${cabinPrefix}MileageCost`]);
-    if (!available || !miles) return [];
+    if (!available || !miles) return null;
+
     const airlines = typeof item[`${cabinPrefix}Airlines`] === 'string' ? String(item[`${cabinPrefix}Airlines`]) : undefined;
-    return [{
+    const originalTaxes = safeNumber(item[`${cabinPrefix}TotalTaxes`]);
+    const originalTaxesCurrency = typeof item[`${cabinPrefix}TaxesCurrency`] === 'string' && item[`${cabinPrefix}TaxesCurrency`]
+      ? String(item[`${cabinPrefix}TaxesCurrency`]).toUpperCase()
+      : undefined;
+    const taxesUsd = await convertToUsd(originalTaxes, originalTaxesCurrency);
+
+    return {
       id: `seats-${String(item.ID || index)}-${cabinPrefix}`,
       kind: 'miles' as const,
       provider: 'Seats.aero',
@@ -182,10 +227,16 @@ async function searchSeatsAero(input: FlightSearchInput): Promise<FlightSearchRe
       destination: route?.DestinationAirport || input.destination,
       departureDate: typeof item.Date === 'string' ? item.Date : input.departureDate,
       miles,
+      taxes: taxesUsd ?? originalTaxes,
+      taxesCurrency: taxesUsd !== undefined ? 'USD' : originalTaxesCurrency,
+      originalTaxes,
+      originalTaxesCurrency,
       cabin: input.cabin || 'economy',
       direct: item[`${cabinPrefix}Direct`] === true,
-    }];
-  });
+    } satisfies FlightSearchResult;
+  }));
+
+  return rows.filter((row): row is FlightSearchResult => Boolean(row));
 }
 
 export async function searchFlights(raw: FlightSearchInput): Promise<FlightSearchResponse> {
