@@ -4,6 +4,7 @@ import { LanguageProvider } from '@/components/i18n/language-provider';
 import { SiteTranslationLayer } from '@/components/i18n/site-translation-layer';
 import './globals.css';
 import './vivatrip-redesign.css';
+import './explore-width-fix.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
