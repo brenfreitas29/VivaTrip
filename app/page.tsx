@@ -2,209 +2,235 @@
 
 import Link from 'next/link';
 import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 type Locale = 'pt' | 'en' | 'es';
 
+type Destination = {
+  city: string;
+  country: { pt: string; en: string; es: string };
+  image: string;
+  countryCode: string;
+};
+
+const destinations: Destination[] = [
+  {
+    city: 'Tokyo',
+    country: { pt: 'Japão', en: 'Japan', es: 'Japón' },
+    countryCode: 'JP',
+    image: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=700&q=86',
+  },
+  {
+    city: 'Kyoto',
+    country: { pt: 'Japão', en: 'Japan', es: 'Japón' },
+    countryCode: 'JP',
+    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=700&q=86',
+  },
+  {
+    city: 'Osaka',
+    country: { pt: 'Japão', en: 'Japan', es: 'Japón' },
+    countryCode: 'JP',
+    image: 'https://images.unsplash.com/photo-1590559899731-a382839e5549?auto=format&fit=crop&w=700&q=86',
+  },
+  {
+    city: 'Seoul',
+    country: { pt: 'Coreia do Sul', en: 'South Korea', es: 'Corea del Sur' },
+    countryCode: 'KR',
+    image: 'https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&fit=crop&w=700&q=86',
+  },
+  {
+    city: 'Busan',
+    country: { pt: 'Coreia do Sul', en: 'South Korea', es: 'Corea del Sur' },
+    countryCode: 'KR',
+    image: 'https://images.unsplash.com/photo-1598935898639-81586f7d2129?auto=format&fit=crop&w=700&q=86',
+  },
+];
+
 const copy = {
   pt: {
-    language: 'Idioma', currency: 'Moeda', dealsNav: 'Ofertas', alertsNav: 'Alertas de preço', howNav: 'Como funciona', signIn: 'Entrar', myTrips: 'Minhas viagens', profile: 'Perfil', logout: 'Sair',
-    eyebrow: 'Uma busca. O mundo inteiro.', title: 'Viaje para qualquer lugar.', accent: 'Gaste menos.',
-    hero: 'Compare passagens, milhas e tarifas exclusivas de parceiros confiáveis no mundo inteiro — tudo em uma busca simples.',
-    roundTrip: 'Ida e volta', oneWay: 'Só ida', multiCity: 'Vários destinos', from: 'Origem', to: 'Destino', depart: 'Ida', return: 'Volta', travelers: 'Viajantes',
-    originValue: 'São Paulo (SAO)', destinationValue: 'Lisboa (LIS)', departValue: '12 out 2026', returnValue: '24 out 2026', travelersValue: '1 viajante · Econômica',
-    search: 'Buscar no mundo', miles: 'Comparar também com milhas', searches: 'Busca em mais de 120 sites confiáveis', compared: 'Comparamos', airlines: 'Companhias aéreas', programs: 'Programas de milhas', partners: 'Sites de viagem', memberFares: 'Tarifas exclusivas',
-    picked: 'Selecionadas hoje', fresh: 'Novas tarifas para sua busca', worldCloser: 'O mundo está mais perto do que você imagina', viewAll: 'Ver todas as ofertas →', fromPrice: 'a partir de', roundTripPrice: 'ida e volta',
-    tags: ['Melhor preço', 'Em alta', 'Tarifa baixa'], countries: ['França', 'Brasil', 'Austrália'],
-    smarter: 'Uma rota mais inteligente', searchingTitle: 'Nós fazemos a busca.', goingTitle: 'Você faz a viagem.',
-    howBody: 'A VivaTrip reúne tarifas em dinheiro, opções com milhas e ofertas de parceiros em uma visão clara. Compare o custo real e reserve com o provedor que escolher.', start: 'Começar uma busca',
-    steps: [
-      ['Busque uma vez', 'Conte onde você está e para onde deseja viajar.'],
-      ['Compare tudo', 'Veja tarifas, milhas, taxas, escalas e duração lado a lado.'],
-      ['Reserve com confiança', 'Escolha a oferta e conclua a reserva com um parceiro confiável.'],
-    ],
-    freeAlerts: 'Alertas gratuitos', alertTitle: 'Deixe a melhor tarifa', alertAccent: 'encontrar você.', alertBody: 'Acompanhe uma rota e avisaremos quando o preço cair — incluindo oportunidades difíceis de encontrar com milhas.', email: 'seu@email.com', createAlert: 'Criar alerta grátis', created: 'Alerta criado ✓', noSpam: 'Sem spam. Cancele quando quiser.',
-    promises: [
-      ['Resultados transparentes', 'Ofertas patrocinadas são sempre identificadas.'],
-      ['Feito para o mundo', 'Cobertura global de grandes cidades a ilhas remotas.'],
-      ['Comparação gratuita', 'Podemos receber comissão quando você reserva com um parceiro.'],
-    ],
-    tagline: 'Seu caminho mais claro para qualquer lugar.', disclosure: 'Política de afiliados', privacy: 'Privacidade', footer: '© 2026 VivaTrip. As tarifas do protótipo são ilustrativas e dependem da disponibilidade do provedor.',
+    trips: 'Viagens', discover: 'Descobrir', saved: 'Salvos', itinerary: 'Roteiro', planner: 'Planejador',
+    titleA: 'Explore', titleB: 'um mundo maior', subtitle: 'Planeje. Salve. Viva.', search: 'Para onde vamos?', language: 'Idioma', signIn: 'Entrar', profile: 'Perfil', logout: 'Sair',
   },
   en: {
-    language: 'Language', currency: 'Currency', dealsNav: 'Explore deals', alertsNav: 'Price alerts', howNav: 'How it works', signIn: 'Sign in', myTrips: 'My trips', profile: 'Profile', logout: 'Sign out',
-    eyebrow: 'One search. The whole world.', title: 'Go anywhere.', accent: 'Spend less.',
-    hero: 'Compare flights, miles and member-only fares from trusted travel partners worldwide — all in one beautifully simple search.',
-    roundTrip: 'Round trip', oneWay: 'One way', multiCity: 'Multi-city', from: 'From', to: 'To', depart: 'Depart', return: 'Return', travelers: 'Travelers',
-    originValue: 'São Paulo (SAO)', destinationValue: 'Lisbon (LIS)', departValue: 'Oct 12, 2026', returnValue: 'Oct 24, 2026', travelersValue: '1 traveler · Economy',
-    search: 'Search the world', miles: 'Compare fares with miles', searches: 'Searches 120+ trusted travel sites', compared: 'Compared across', airlines: 'Airlines', programs: 'Mileage programs', partners: 'Travel partners', memberFares: 'Member fares',
-    picked: 'Handpicked today', fresh: 'Fresh fares for your search', worldCloser: 'The world is closer than you think', viewAll: 'View all deals →', fromPrice: 'from', roundTripPrice: 'round trip',
-    tags: ['Best value', 'Trending', 'Low fare'], countries: ['France', 'Brazil', 'Australia'],
-    smarter: 'A smarter route anywhere', searchingTitle: 'We do the searching.', goingTitle: 'You do the going.',
-    howBody: 'VivaTrip brings cash fares, mileage options and partner deals into one clear view. Compare the true trip cost, then book securely with the provider you choose.', start: 'Start a search',
-    steps: [
-      ['Search once', 'Tell us where you are and where in the world you want to go.'],
-      ['Compare everything', 'See fares, miles, fees, stops and travel time side by side.'],
-      ['Book with confidence', 'Choose your deal and complete the booking with a trusted partner.'],
-    ],
-    freeAlerts: 'Free price alerts', alertTitle: 'Let the best fare', alertAccent: 'find you.', alertBody: 'Track a route and we’ll let you know when the price drops — including hard-to-spot mileage opportunities.', email: 'you@email.com', createAlert: 'Create free alert', created: 'Alert created ✓', noSpam: 'No spam. Unsubscribe anytime.',
-    promises: [
-      ['Transparent results', 'Sponsored offers are always clearly labeled.'],
-      ['Built for the world', 'Global coverage, from major cities to remote islands.'],
-      ['Free to compare', 'We may earn a commission when you book with a partner.'],
-    ],
-    tagline: 'Your clearest path anywhere.', disclosure: 'Affiliate disclosure', privacy: 'Privacy', footer: '© 2026 VivaTrip. Prototype fares are illustrative and subject to provider availability.',
+    trips: 'Trips', discover: 'Discover', saved: 'Saved', itinerary: 'Itinerary', planner: 'Planner',
+    titleA: 'Explore', titleB: 'a bigger world', subtitle: 'Plan. Save. Experience.', search: 'Where to next?', language: 'Language', signIn: 'Sign in', profile: 'Profile', logout: 'Sign out',
   },
   es: {
-    language: 'Idioma', currency: 'Moneda', dealsNav: 'Explorar ofertas', alertsNav: 'Alertas de precio', howNav: 'Cómo funciona', signIn: 'Ingresar', myTrips: 'Mis viajes', profile: 'Perfil', logout: 'Salir',
-    eyebrow: 'Una búsqueda. Todo el mundo.', title: 'Viaja a cualquier lugar.', accent: 'Gasta menos.',
-    hero: 'Compara vuelos, millas y tarifas exclusivas de socios confiables en todo el mundo — todo en una búsqueda simple.',
-    roundTrip: 'Ida y vuelta', oneWay: 'Solo ida', multiCity: 'Varios destinos', from: 'Origen', to: 'Destino', depart: 'Salida', return: 'Regreso', travelers: 'Viajeros',
-    originValue: 'São Paulo (SAO)', destinationValue: 'Lisboa (LIS)', departValue: '12 oct 2026', returnValue: '24 oct 2026', travelersValue: '1 viajero · Económica',
-    search: 'Buscar en el mundo', miles: 'Comparar también con millas', searches: 'Busca en más de 120 sitios confiables', compared: 'Comparamos', airlines: 'Aerolíneas', programs: 'Programas de millas', partners: 'Sitios de viajes', memberFares: 'Tarifas exclusivas',
-    picked: 'Elegidas hoy', fresh: 'Nuevas tarifas para tu búsqueda', worldCloser: 'El mundo está más cerca de lo que imaginas', viewAll: 'Ver todas las ofertas →', fromPrice: 'desde', roundTripPrice: 'ida y vuelta',
-    tags: ['Mejor precio', 'En tendencia', 'Tarifa baja'], countries: ['Francia', 'Brasil', 'Australia'],
-    smarter: 'Una ruta más inteligente', searchingTitle: 'Nosotros buscamos.', goingTitle: 'Tú haces el viaje.',
-    howBody: 'VivaTrip reúne tarifas en dinero, opciones con millas y ofertas de socios en una vista clara. Compara el costo real y reserva con el proveedor que elijas.', start: 'Comenzar una búsqueda',
-    steps: [
-      ['Busca una vez', 'Dinos dónde estás y adónde quieres viajar.'],
-      ['Compara todo', 'Ve tarifas, millas, tasas, escalas y duración lado a lado.'],
-      ['Reserva con confianza', 'Elige la oferta y completa la reserva con un socio confiable.'],
-    ],
-    freeAlerts: 'Alertas gratuitas', alertTitle: 'Deja que la mejor tarifa', alertAccent: 'te encuentre.', alertBody: 'Sigue una ruta y te avisaremos cuando baje el precio — incluso oportunidades difíciles de encontrar con millas.', email: 'tu@email.com', createAlert: 'Crear alerta gratis', created: 'Alerta creada ✓', noSpam: 'Sin spam. Cancela cuando quieras.',
-    promises: [
-      ['Resultados transparentes', 'Las ofertas patrocinadas siempre están identificadas.'],
-      ['Creado para el mundo', 'Cobertura global, desde grandes ciudades hasta islas remotas.'],
-      ['Comparación gratuita', 'Podemos recibir una comisión cuando reservas con un socio.'],
-    ],
-    tagline: 'Tu camino más claro a cualquier lugar.', disclosure: 'Política de afiliados', privacy: 'Privacidad', footer: '© 2026 VivaTrip. Las tarifas del prototipo son ilustrativas y dependen de la disponibilidad del proveedor.',
+    trips: 'Viajes', discover: 'Descubrir', saved: 'Guardados', itinerary: 'Itinerario', planner: 'Planificador',
+    titleA: 'Explora', titleB: 'un mundo más grande', subtitle: 'Planifica. Guarda. Vive.', search: '¿A dónde vamos?', language: 'Idioma', signIn: 'Ingresar', profile: 'Perfil', logout: 'Salir',
   },
 } as const;
 
-const deals = [
-  { city: 'Paris', route: 'New York → Paris', price: '$389', tone: 'paris' },
-  { city: 'Rio', route: 'Lisbon → Rio de Janeiro', price: '$496', tone: 'rio' },
-  { city: 'Sydney', route: 'Singapore → Sydney', price: '$341', tone: 'sydney' },
-];
-
 export default function Home() {
-  const [currency, setCurrency] = useState('BRL');
   const [locale, setLocale] = useState<Locale>('pt');
-    const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [query, setQuery] = useState('');
   const t = copy[locale];
 
   useEffect(() => {
-    document.documentElement.lang = locale === 'pt' ? 'pt-BR' : locale;
+    const stored = window.localStorage.getItem('vivatrip-language');
+    if (stored === 'pt' || stored === 'en' || stored === 'es') setLocale(stored);
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('vivatrip-language', locale);
+    document.documentElement.lang = locale === 'pt' ? 'pt-BR' : locale === 'es' ? 'es-AR' : 'en-US';
   }, [locale]);
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
-
     void createClient().then(async (supabase) => {
       const { data } = await supabase.auth.getUser();
       setUser(data.user);
-      const authState = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-        setUser(session?.user ?? null);
-      });
+      const authState = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => setUser(session?.user ?? null));
       unsubscribe = () => authState.data.subscription.unsubscribe();
     }).catch(() => undefined);
-
     return () => unsubscribe?.();
   }, []);
 
-  async function handleLogout() {
+  const firstName = useMemo(() => {
+    const raw = String(user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Viajante').trim();
+    return raw.split(/\s+/)[0] || 'Viajante';
+  }, [user]);
+
+  async function logout() {
     const supabase = await createClient();
     await supabase.auth.signOut();
     setUser(null);
   }
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.location.assign('/search');
+    const value = query.trim();
+    window.location.assign(value ? `/explore?q=${encodeURIComponent(value)}` : '/explore');
   }
 
   return (
-    <main>
-      <section className="hero-shell">
-        <nav className="nav-wrap" aria-label="Main navigation">
-          <a className="brand" href="#top" aria-label="VivaTrip home"><span className="brand-mark">VT</span><span>VivaTrip</span></a>
-          <div className="nav-links"><a href="#deals">{t.dealsNav}</a><a href="#alerts">{t.alertsNav}</a><a href="#how">{t.howNav}</a></div>
-          <div className="nav-actions">
+    <main className="reference-home">
+      <nav className="reference-nav" aria-label="Main navigation">
+        <Link className="reference-brand" href="/" aria-label="VivaTrip">
+          <span>VivaTrip</span><span className="plane-mark" aria-hidden="true">✈</span>
+        </Link>
+
+        <div className="reference-links">
+          <Link href="/trips">{t.trips}</Link>
+          <Link href="/explore">{t.discover}</Link>
+          <Link href="/alerts">{t.saved}</Link>
+          <Link href="/trips">{t.itinerary}</Link>
+          <Link href="/trips/new">{t.planner}</Link>
+        </div>
+
+        <div className="reference-actions">
+          <label className="reference-language">
+            <span aria-hidden="true">◎</span>
             <select className="language-select" value={locale} onChange={(event) => setLocale(event.target.value as Locale)} aria-label={t.language}>
               <option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option>
             </select>
-            <select className="currency-select" value={currency} onChange={(event) => setCurrency(event.target.value)} aria-label={t.currency}>
-              <option>BRL</option><option>USD</option><option>EUR</option><option>GBP</option><option>AUD</option><option>CAD</option><option>JPY</option>
-            </select>
-            {user ? (
-              <>
-                <Link className="nav-trips" href="/trips">{t.myTrips}</Link>
-                <details className="profile-menu">
-                  <summary aria-label={t.profile}>{(user.user_metadata.full_name || user.email || 'V').slice(0, 1).toUpperCase()}</summary>
-                  <div><Link href="/profile">{t.profile}</Link><button type="button" onClick={handleLogout}>{t.logout}</button></div>
-                </details>
-              </>
-            ) : <Link className="sign-in" href="/login">{t.signIn}</Link>}
-          </div>
-        </nav>
-
-        <div className="hero" id="top">
-          <div className="eyebrow"><span>✦</span> {t.eyebrow}</div>
-          <h1>{t.title}<br /><em>{t.accent}</em></h1>
-          <p className="hero-copy">{t.hero}</p>
-          <form className="search-card" key={locale} onSubmit={handleSearch}>
-            <div className="trip-tabs" aria-label="Trip type">
-              <label><input defaultChecked name="trip" type="radio" /> {t.roundTrip}</label>
-              <label><input name="trip" type="radio" /> {t.oneWay}</label>
-              <label><input name="trip" type="radio" /> {t.multiCity}</label>
-            </div>
-            <div className="search-grid">
-              <label><span>{t.from}</span><input aria-label={t.from} defaultValue={t.originValue} /></label>
-              <button className="swap" type="button" aria-label="Swap origin and destination">⇄</button>
-              <label><span>{t.to}</span><input aria-label={t.to} defaultValue={t.destinationValue} /></label>
-              <label><span>{t.depart}</span><input aria-label={t.depart} defaultValue={t.departValue} /></label>
-              <label><span>{t.return}</span><input aria-label={t.return} defaultValue={t.returnValue} /></label>
-              <label><span>{t.travelers}</span><input aria-label={t.travelers} defaultValue={t.travelersValue} /></label>
-              <button className="search-button" type="submit">{t.search} <span>→</span></button>
-            </div>
-            <div className="search-options"><label><input type="checkbox" /> {t.miles}</label><p><span>✓</span> {t.searches}</p></div>
-          </form>
-          <div className="trust-row"><span>{t.compared}</span><b>{t.airlines}</b><b>{t.programs}</b><b>{t.partners}</b><b>{t.memberFares}</b></div>
+          </label>
+          <span className="nav-divider" />
+          {user ? (
+            <details className="reference-profile">
+              <summary><span className="profile-avatar">{firstName.slice(0, 1).toUpperCase()}</span><span>{firstName}</span><span className="chevron">⌄</span></summary>
+              <div className="profile-popover"><Link href="/profile">{t.profile}</Link><button type="button" onClick={logout}>{t.logout}</button></div>
+            </details>
+          ) : <Link className="reference-signin" href="/login">{t.signIn}</Link>}
         </div>
-      </section>
+      </nav>
 
-      <section className="deals-section" id="deals">
-        <div className="section-heading"><div><span className="section-kicker">Inspiração</span><h2>{t.worldCloser}</h2></div><Link href="/offers">{t.viewAll}</Link></div>
-        <div className="deal-grid">
-          {deals.map((deal, index) => (
-            <article className={`deal-card ${deal.tone}`} key={deal.city}>
-              <div className="deal-visual"><span className="deal-tag">{t.tags[index]}</span><div className="city-code">{deal.city.slice(0, 3).toUpperCase()}</div></div>
-              <div className="deal-info"><div><h3>{deal.city}</h3><p>{t.countries[index]} · {deal.route}</p></div><div className="price"><span>{t.fromPrice}</span><strong>{deal.price}</strong><small>{t.roundTripPrice}</small></div></div>
-            </article>
+      <section className="reference-hero">
+        <div className="hero-overlay" />
+        <div className="hero-copy-reference">
+          <h1><span>{t.titleA}</span><br />{t.titleB}</h1>
+          <p>{t.subtitle}</p>
+        </div>
+
+        <form className="reference-search" onSubmit={submitSearch}>
+          <span className="search-icon" aria-hidden="true">⌕</span>
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} aria-label={t.search} />
+          <button type="submit" aria-label={t.search}>→</button>
+        </form>
+
+        <div className="reference-destinations" aria-label="Featured destinations">
+          {destinations.map((destination) => (
+            <Link className="reference-card" key={destination.city} href={`/trips/new?destination=${encodeURIComponent(destination.city)}&country=${destination.countryCode}`}>
+              <img src={destination.image} alt={`${destination.city}, ${destination.country[locale]}`} loading="eager" />
+              <strong>{destination.city}</strong>
+              <span>{destination.country[locale]}</span>
+            </Link>
           ))}
         </div>
       </section>
 
-      <section className="how-section" id="how">
-        <div className="how-copy"><span className="section-kicker">{t.smarter}</span><h2>{t.searchingTitle}<br />{t.goingTitle}</h2><p>{t.howBody}</p><a href="#top">{t.start} <span>↗</span></a></div>
-        <div className="steps">{t.steps.map((step, index) => <article key={step[0]}><span>0{index + 1}</span><div><h3>{step[0]}</h3><p>{step[1]}</p></div></article>)}</div>
-      </section>
-
-      <section className="alert-section" id="alerts">
-        <div className="alert-orbit"><span>CDG</span><span>GIG</span><span>SYD</span></div>
-        <div className="alert-content"><span className="section-kicker">{t.freeAlerts}</span><h2>{t.alertTitle}<br />{t.alertAccent}</h2><p>{t.alertBody}</p><div className="alert-form"><input aria-label="Email" placeholder={t.email} type="email" /><button onClick={() => window.location.assign(user ? '/alerts' : '/login?next=/alerts')}>{t.createAlert}</button></div><small>{t.noSpam}</small></div>
-      </section>
-
-      <section className="promise-section">
-        {t.promises.map((promise, index) => <div key={promise[0]}><span>{['◎', '⌁', '◇'][index]}</span><h3>{promise[0]}</h3><p>{promise[1]}</p></div>)}
-      </section>
-
-      <footer>
-        <a className="brand footer-brand" href="#top"><span className="brand-mark">VT</span><span>VivaTrip</span></a><p>{t.tagline}</p>
-        <div><a href="#deals">{t.dealsNav}</a><a href="#alerts">{t.alertsNav}</a><a href="#how">{t.howNav}</a><Link href="/affiliate-disclosure">{t.disclosure}</Link><Link href="/privacy">{t.privacy}</Link></div>
-        <small>{t.footer}</small>
-      </footer>
+      <style jsx global>{`
+        body { margin: 0; background: #f6f5fb; }
+        .global-language-switcher { display: none !important; }
+        .reference-home { min-height: 100vh; background: #f7f6fb; color: #11104d; font-family: Arial, Helvetica, sans-serif; }
+        .reference-nav { height: 102px; padding: 0 6.25vw; background: rgba(255,255,255,.98); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 32px; position: relative; z-index: 20; box-shadow: 0 1px 0 rgba(25,21,82,.05); }
+        .reference-brand { display: inline-flex; align-items: center; gap: 10px; color: #221879; text-decoration: none; font-size: 28px; font-weight: 800; letter-spacing: -.8px; width: max-content; }
+        .plane-mark { font-size: 34px; line-height: 1; transform: rotate(-10deg); color: #4231bc; }
+        .reference-links { display: flex; gap: clamp(28px,3.6vw,56px); align-items: center; justify-content: center; }
+        .reference-links a { color: #14104c; text-decoration: none; font-size: 16px; font-weight: 500; transition: color .2s ease; white-space: nowrap; }
+        .reference-links a:hover { color: #6046f5; }
+        .reference-actions { justify-self: end; display: flex; align-items: center; gap: 18px; }
+        .reference-language { display: flex; align-items: center; gap: 7px; font-size: 18px; }
+        .reference-language select { border: 0; background: transparent; color: #15104d; font-size: 15px; font-weight: 700; outline: none; cursor: pointer; }
+        .nav-divider { width: 1px; height: 40px; background: #dad8e9; }
+        .reference-signin { text-decoration: none; color: #15104d; font-weight: 700; }
+        .reference-profile { position: relative; }
+        .reference-profile summary { list-style: none; display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; }
+        .reference-profile summary::-webkit-details-marker { display:none; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: white; font-weight: 800; background: linear-gradient(145deg,#3020a4,#f18465); box-shadow: inset 0 0 0 2px rgba(255,255,255,.5); }
+        .chevron { font-size: 16px; }
+        .profile-popover { position: absolute; right: 0; top: 52px; min-width: 150px; background: white; border: 1px solid #eceaf5; border-radius: 14px; padding: 8px; box-shadow: 0 18px 45px rgba(32,22,85,.15); }
+        .profile-popover a,.profile-popover button { display: block; width: 100%; padding: 10px 12px; text-align: left; border:0; background: transparent; color:#17114d; text-decoration:none; cursor:pointer; border-radius:9px; font: inherit; }
+        .profile-popover a:hover,.profile-popover button:hover { background:#f4f1ff; }
+        .reference-hero { min-height: calc(100vh - 102px); position: relative; overflow: hidden; background-image: url('https://images.unsplash.com/photo-1570459027562-4a916cc6113f?auto=format&fit=crop&w=2200&q=90'); background-size: cover; background-position: center 48%; padding: 1px 0 48px; }
+        .hero-overlay { position:absolute; inset:0; background: linear-gradient(90deg,rgba(32,50,104,.42) 0%,rgba(25,43,95,.14) 45%,rgba(17,33,75,.04) 72%), linear-gradient(180deg,rgba(255,255,255,.03) 55%,rgba(250,244,252,.78) 100%); }
+        .hero-copy-reference { position: relative; z-index: 2; width: min(1300px,86vw); margin: 105px auto 0; color: #fff; }
+        .hero-copy-reference h1 { margin:0; font-size: clamp(58px,6vw,98px); line-height:.95; letter-spacing:-4px; font-weight:800; text-shadow:0 2px 18px rgba(20,30,80,.16); }
+        .hero-copy-reference p { margin:30px 0 0; font-size: clamp(19px,1.65vw,28px); font-weight:500; letter-spacing:-.4px; }
+        .reference-search { position:relative; z-index:3; width:min(900px,72vw); height:88px; margin:38px auto 0; border-radius:999px; background:#fff; display:flex; align-items:center; gap:18px; padding:0 14px 0 32px; box-shadow:0 14px 45px rgba(32,31,92,.16); }
+        .search-icon { color:#4936bb; font-size:36px; line-height:1; transform:rotate(-12deg); }
+        .reference-search input { flex:1; min-width:0; border:0; outline:0; background:transparent; color:#20195f; font-size:21px; padding:22px 4px; }
+        .reference-search input::placeholder { color:#9d9bb5; }
+        .reference-search button { width:66px; height:66px; flex:0 0 66px; border:0; border-radius:50%; background:linear-gradient(135deg,#6d4df5,#5c35ea); color:white; font-size:33px; cursor:pointer; box-shadow:0 8px 20px rgba(91,55,226,.3); transition:transform .2s ease; }
+        .reference-search button:hover { transform:translateX(2px) scale(1.03); }
+        .reference-destinations { position:relative; z-index:4; width:min(1260px,88vw); margin:74px auto 0; display:grid; grid-template-columns:repeat(5,1fr); gap:12px; align-items:end; }
+        .reference-card { min-width:0; background:linear-gradient(180deg,rgba(255,255,255,.99),rgba(247,246,251,.98)); border-radius:24px; padding:9px 9px 18px; text-decoration:none; color:#17114c; box-shadow:0 14px 32px rgba(28,23,72,.18); border:1px solid rgba(255,255,255,.9); transform:translateY(0); transition:transform .2s ease,box-shadow .2s ease; }
+        .reference-card:hover { transform:translateY(-6px); box-shadow:0 20px 38px rgba(28,23,72,.23); }
+        .reference-card img { width:100%; aspect-ratio:1.28/1; object-fit:cover; display:block; border-radius:18px; }
+        .reference-card strong { display:block; margin:16px 9px 3px; font-size:20px; letter-spacing:-.4px; }
+        .reference-card span { display:block; margin:0 9px; color:#6e6a8f; font-size:14px; }
+        @media (max-width: 1050px) {
+          .reference-nav { grid-template-columns:auto 1fr auto; padding:0 28px; }
+          .reference-links { gap:20px; }
+          .reference-links a:nth-child(3),.reference-links a:nth-child(4) { display:none; }
+          .reference-destinations { grid-template-columns:repeat(5,220px); overflow-x:auto; width:auto; margin-left:6vw; margin-right:0; padding:0 6vw 18px 0; scrollbar-width:none; }
+          .reference-destinations::-webkit-scrollbar { display:none; }
+        }
+        @media (max-width: 720px) {
+          .reference-nav { height:78px; padding:0 18px; grid-template-columns:auto 1fr auto; gap:12px; }
+          .reference-brand { font-size:22px; }
+          .plane-mark { font-size:27px; }
+          .reference-links { display:none; }
+          .nav-divider,.reference-language span { display:none; }
+          .reference-actions { gap:8px; }
+          .reference-profile summary > span:nth-child(2),.chevron { display:none; }
+          .reference-hero { min-height:calc(100vh - 78px); background-position:63% center; padding-bottom:28px; }
+          .hero-copy-reference { width:88vw; margin-top:82px; }
+          .hero-copy-reference h1 { font-size:clamp(48px,16vw,72px); letter-spacing:-3px; }
+          .hero-copy-reference p { margin-top:20px; font-size:18px; }
+          .reference-search { width:calc(88vw - 28px); height:68px; margin-top:30px; padding-left:22px; }
+          .search-icon { font-size:29px; }
+          .reference-search input { font-size:17px; }
+          .reference-search button { width:52px;height:52px;flex-basis:52px;font-size:27px; }
+          .reference-destinations { margin-top:55px; grid-template-columns:repeat(5,178px); }
+          .reference-card { border-radius:20px; }
+          .reference-card img { border-radius:15px; }
+          .reference-card strong { font-size:17px; }
+        }
+      `}</style>
     </main>
   );
 }
