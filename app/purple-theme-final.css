@@ -1,0 +1,252 @@
+:root {
+  --ink: #1c165d;
+  --teal: #4f3be8;
+  --lime: #f0edff;
+  --orange: #765df5;
+}
+
+body {
+  color: var(--vt-ink, #19163f) !important;
+  background: linear-gradient(180deg, #fbfbff 0%, #f7f6fb 100%) !important;
+}
+
+/* Final global pass: remove the former green/lime palette from product screens. */
+.trips-page,
+.profile-page,
+.public-module,
+.legal-page,
+.dashboard-page,
+.account-page,
+.alerts-page,
+.itinerary-page {
+  background:
+    radial-gradient(circle at 12% 2%, rgba(105, 85, 255, .07), transparent 28%),
+    linear-gradient(180deg, #fbfbff 0%, #f7f6fb 100%) !important;
+}
+
+/* Trip creation / editing */
+.trip-form {
+  width: min(1180px, calc(100% - 40px)) !important;
+  margin: 0 auto !important;
+  padding-bottom: 120px !important;
+}
+
+.trip-form-section {
+  background: rgba(255, 255, 255, .98) !important;
+  border: 1px solid #ebe9f7 !important;
+  box-shadow: 0 16px 42px rgba(47, 38, 117, .08) !important;
+  color: #19163f !important;
+}
+
+.trip-form-heading > span {
+  background: #f0edff !important;
+  color: #4f3be8 !important;
+  border: 1px solid #dfd9ff !important;
+}
+
+.trip-form-heading h2,
+.trip-form legend,
+.trip-form label > span,
+.trip-form strong {
+  color: #1c165d !important;
+}
+
+.trip-form-heading p,
+.trip-form label em,
+.trip-form small {
+  color: #77749a !important;
+}
+
+.trip-form input,
+.trip-form select,
+.trip-form textarea {
+  background: #fff !important;
+  color: #19163f !important;
+  border: 1px solid #dedaf3 !important;
+}
+
+.trip-form input:focus,
+.trip-form select:focus,
+.trip-form textarea:focus {
+  border-color: #4f3be8 !important;
+  box-shadow: 0 0 0 4px rgba(79, 59, 232, .11) !important;
+}
+
+.trip-choice-grid label,
+.interest-grid button {
+  background: #fff !important;
+  color: #1c165d !important;
+  border-color: #dedaf3 !important;
+}
+
+.trip-choice-grid label:hover,
+.interest-grid button:hover {
+  border-color: #bfb5ff !important;
+  background: #faf9ff !important;
+}
+
+.trip-choice-grid label.selected,
+.interest-grid button.selected {
+  background: #f0edff !important;
+  border-color: #4f3be8 !important;
+  color: #4f3be8 !important;
+  box-shadow: inset 0 0 0 1px rgba(79, 59, 232, .08) !important;
+}
+
+.trip-choice-grid input {
+  accent-color: #4f3be8 !important;
+}
+
+.trip-savebar {
+  background: rgba(255, 255, 255, .96) !important;
+  border: 1px solid #e4e0f5 !important;
+  box-shadow: 0 -12px 36px rgba(47, 38, 117, .10) !important;
+  color: #77749a !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.trip-savebar p,
+.trip-savebar p:not(.error) {
+  color: #77749a !important;
+}
+
+.trip-savebar button {
+  background: linear-gradient(135deg, #6653f5 0%, #4f3be8 100%) !important;
+  color: #fff !important;
+  border: 0 !important;
+  box-shadow: 0 10px 26px rgba(79, 59, 232, .26) !important;
+}
+
+.trip-savebar button:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  filter: brightness(1.03) !important;
+}
+
+/* Remaining legacy navigation/profile treatments */
+.profile-menu summary,
+.brand-mark,
+.search-button,
+.alert-form button,
+.primary-action,
+.cta-button {
+  background: linear-gradient(135deg, #6653f5, #4f3be8) !important;
+  color: #fff !important;
+}
+
+.profile-menu > div {
+  border-color: #ebe9f7 !important;
+  box-shadow: 0 15px 35px rgba(47, 38, 117, .12) !important;
+}
+
+.profile-menu a:hover,
+.profile-menu button:hover,
+.nav-links a:hover,
+.nav-trips:hover,
+.text-action:hover {
+  color: #4f3be8 !important;
+  background: #f0edff !important;
+}
+
+.swap,
+.section-kicker,
+.price strong,
+.search-options p span,
+.auth-eyebrow,
+.module-status,
+.detail-label {
+  color: #4f3be8 !important;
+}
+
+.trip-tabs input,
+.search-options input,
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #4f3be8 !important;
+}
+
+/* Old dark-green content blocks */
+.how-section {
+  background: linear-gradient(135deg, #21196f 0%, #34279f 100%) !important;
+}
+
+.how-copy p,
+.steps p {
+  color: #c9c3ee !important;
+}
+
+.how-copy a,
+.steps article > span {
+  color: #cfc7ff !important;
+  border-color: #8c78ff !important;
+}
+
+.alert-section {
+  background: linear-gradient(135deg, #f4f1ff 0%, #eae5ff 100%) !important;
+  color: #1c165d !important;
+}
+
+.alert-section::before,
+.alert-section::after {
+  border-color: rgba(79, 59, 232, .16) !important;
+}
+
+.alert-content p,
+.alert-content small {
+  color: #77749a !important;
+}
+
+.promise-section span {
+  background: #f0edff !important;
+  color: #4f3be8 !important;
+}
+
+footer {
+  background: #f6f4fc !important;
+  color: #595477 !important;
+}
+
+footer > p,
+footer > div,
+footer > small {
+  color: #77749a !important;
+}
+
+/* Generic cards and badges that still inherited green tints. */
+.module-card,
+.dashboard-grid article,
+.trip-facts article,
+.trip-detail-grid article,
+.profile-section,
+.saved-alert,
+.itinerary-day,
+.itinerary-empty,
+.itinerary-generating,
+.itinerary-planner,
+.billing-panel,
+.billing-notice,
+.trips-empty {
+  border-color: #ebe9f7 !important;
+  box-shadow: 0 12px 32px rgba(47, 38, 117, .08) !important;
+}
+
+.edited-pill,
+.season-pill,
+.saved-alert-actions span,
+.status-pill,
+.tag,
+.badge {
+  background: #f0edff !important;
+  color: #4f3be8 !important;
+  border-color: #ddd7ff !important;
+}
+
+@media (max-width: 640px) {
+  .trip-form {
+    width: min(100% - 24px, 1180px) !important;
+  }
+
+  .trip-savebar {
+    left: 12px !important;
+    right: 12px !important;
+  }
+}
