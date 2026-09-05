@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { TripDetailActions } from "@/components/trips/trip-detail-actions";
 import { TripLiveContext } from "@/components/trips/trip-live-context";
 import { ItineraryPlanner } from "@/components/itinerary/itinerary-planner";
+import { ItineraryRouteMap } from "@/components/itinerary/itinerary-route-map";
 import { RainyDayReplanner } from "@/components/itinerary/rainy-day-replanner";
 import { TripsNav } from "@/components/trips/trips-nav";
 import { PretripChecklist } from "@/components/pretrip/pretrip-checklist";
@@ -43,6 +44,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
       <TripLiveContext city={trip.destination_city} countryCode={trip.destination_country} startDate={trip.start_date} endDate={trip.end_date} />
       <TripDetailActions trip={trip} />
       <ItineraryPlanner tripId={trip.id} initialItinerary={itinerary} season={season} aiConfigured={ai.configured} />
+      {itinerary?.days?.length ? <ItineraryRouteMap city={trip.destination_city} country={destinationCountry} accommodation={trip.accommodation_address || trip.accommodation_name} days={itinerary.days} /> : null}
       {itinerary?.days?.length ? <RainyDayReplanner tripId={trip.id} days={itinerary.days} aiConfigured={ai.configured} /> : null}
       <PretripChecklist tripId={trip.id} initialItems={pretripItems} trip={{ city: trip.destination_city, country: destinationCountry, startDate: trip.start_date, endDate: trip.end_date }} /></div></main>
   );
