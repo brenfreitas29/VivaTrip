@@ -1,0 +1,18 @@
+.reference-home .reference-hero {
+  background-image: url('https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=2400&q=90') !important;
+  background-size: cover !important;
+  background-position: center 48% !important;
+  background-repeat: no-repeat !important;
+}
+
+.reference-home .hero-overlay {
+  background:
+    linear-gradient(90deg, rgba(26, 22, 82, .58) 0%, rgba(31, 27, 88, .20) 48%, rgba(17, 21, 63, .05) 74%),
+    linear-gradient(180deg, rgba(0, 0, 0, .02) 52%, rgba(26, 18, 67, .28) 100%) !important;
+}
+
+@media (max-width: 720px) {
+  .reference-home .reference-hero {
+    background-position: 64% center !important;
+  }
+}
