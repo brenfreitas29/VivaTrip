@@ -6,6 +6,7 @@ import './globals.css';
 import './vivatrip-redesign.css';
 import './explore-width-fix.css';
 import './flight-search-fix.css';
+import './homepage-hero-background.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
