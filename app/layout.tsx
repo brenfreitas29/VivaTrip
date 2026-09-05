@@ -9,6 +9,7 @@ import './flight-search-fix.css';
 import './homepage-hero-background.css';
 import './home-destinations-polish.css';
 import './purple-theme-final.css';
+import './pretrip-polish.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
