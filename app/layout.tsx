@@ -17,6 +17,7 @@ import './alerts-polish.css';
 import './trips-polish.css';
 import './trip-live-context.css';
 import './route-map-polish.css';
+import './monetization.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
