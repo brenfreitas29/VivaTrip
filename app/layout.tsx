@@ -10,6 +10,7 @@ import './homepage-hero-background.css';
 import './home-destinations-polish.css';
 import './purple-theme-final.css';
 import './pretrip-polish.css';
+import './itinerary-polish.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
