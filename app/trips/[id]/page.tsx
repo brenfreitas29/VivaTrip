@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { TripDetailActions } from "@/components/trips/trip-detail-actions";
 import { TripLiveContext } from "@/components/trips/trip-live-context";
+import { TripRecommendations } from "@/components/monetization/trip-recommendations";
 import { ItineraryPlanner } from "@/components/itinerary/itinerary-planner";
 import { ItineraryRouteMap } from "@/components/itinerary/itinerary-route-map";
 import { RainyDayReplanner } from "@/components/itinerary/rainy-day-replanner";
@@ -42,6 +43,7 @@ export default async function TripDetailPage({ params }: { params: Promise<{ id:
       <section className="trip-facts"><article><span>Viajantes</span><strong>{trip.travelers_count}</strong></article><article><span>Estilo</span><strong>{trip.trip_style ? styleLabels[trip.trip_style] : "Não definido"}</strong></article><article><span>Orçamento</span><strong>{trip.budget_level ? budgetLabels[trip.budget_level] : "Não definido"}</strong></article><article><span>Estação aproximada</span><strong>{season === "unknown" ? "A confirmar" : { spring: "Primavera", summer: "Verão", autumn: "Outono", winter: "Inverno" }[season]}</strong></article></section>
       <section className="trip-detail-grid"><article><span className="detail-label">Hospedagem</span><h2>{trip.accommodation_name || "Ainda não informada"}</h2>{trip.accommodation_address && <p>{trip.accommodation_address}</p>}<small className="hotel-ai-note">A VivaTrip AI usa esta hospedagem como referência para organizar os dias e reduzir deslocamentos desnecessários.</small></article><article><span className="detail-label">Interesses</span><div className="detail-interests">{trip.interests.length ? trip.interests.map((interest) => <span key={interest}>{interestLabels[interest]}</span>) : <p>Nenhum interesse selecionado.</p>}</div></article>{trip.notes && <article className="wide"><span className="detail-label">Notas</span><p>{trip.notes}</p></article>}</section>
       <TripLiveContext city={trip.destination_city} countryCode={trip.destination_country} startDate={trip.start_date} endDate={trip.end_date} />
+      <TripRecommendations city={trip.destination_city} country={destinationCountry} accommodation={trip.accommodation_address || trip.accommodation_name} />
       <TripDetailActions trip={trip} />
       <ItineraryPlanner tripId={trip.id} initialItinerary={itinerary} season={season} aiConfigured={ai.configured} />
       {itinerary?.days?.length ? <ItineraryRouteMap city={trip.destination_city} country={destinationCountry} accommodation={trip.accommodation_address || trip.accommodation_name} days={itinerary.days} /> : null}
