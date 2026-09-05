@@ -1,0 +1,122 @@
+/* Featured destinations — consistent editorial travel cards */
+.home-discovery .destination-marquee {
+  overflow: hidden !important;
+  margin-inline: -3vw !important;
+  padding: 10px 3vw 24px !important;
+}
+
+.home-discovery .destination-track {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 24px !important;
+  width: max-content !important;
+}
+
+.home-discovery .destination-slide {
+  width: clamp(300px, 23vw, 380px) !important;
+  height: 350px !important;
+  display: grid !important;
+  grid-template-rows: 268px 82px !important;
+  flex: 0 0 auto !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(68, 49, 151, .10) !important;
+  border-radius: 24px !important;
+  background: #fff !important;
+  color: #17114c !important;
+  text-decoration: none !important;
+  box-shadow: 0 14px 36px rgba(39, 28, 91, .10) !important;
+  transform: translateZ(0);
+}
+
+.home-discovery .destination-slide:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 44px rgba(39, 28, 91, .16) !important;
+}
+
+.home-discovery .destination-slide > img {
+  width: 100% !important;
+  height: 268px !important;
+  min-height: 268px !important;
+  max-height: 268px !important;
+  aspect-ratio: auto !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
+}
+
+.home-discovery .destination-meta {
+  box-sizing: border-box !important;
+  height: 82px !important;
+  min-height: 82px !important;
+  padding: 14px 18px !important;
+  display: grid !important;
+  grid-template-columns: 32px minmax(0, 1fr) !important;
+  column-gap: 12px !important;
+  align-items: center !important;
+  background: #fff !important;
+}
+
+.home-discovery .destination-meta .flag {
+  width: 32px !important;
+  height: 32px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+}
+
+.home-discovery .destination-copy {
+  display: flex !important;
+  min-width: 0 !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+
+.home-discovery .destination-copy strong {
+  display: block !important;
+  margin: 0 !important;
+  color: #17114c !important;
+  font-family: var(--font-geist-sans), Arial, sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  letter-spacing: -.35px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.home-discovery .destination-copy small {
+  display: block !important;
+  margin: 0 !important;
+  color: #77718e !important;
+  font-family: var(--font-geist-sans), Arial, sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+@media (max-width: 760px) {
+  .home-discovery .destination-track { gap: 16px !important; }
+  .home-discovery .destination-slide {
+    width: 286px !important;
+    height: 326px !important;
+    grid-template-rows: 246px 80px !important;
+    border-radius: 20px !important;
+  }
+  .home-discovery .destination-slide > img {
+    height: 246px !important;
+    min-height: 246px !important;
+    max-height: 246px !important;
+  }
+  .home-discovery .destination-meta {
+    height: 80px !important;
+    min-height: 80px !important;
+    padding: 13px 15px !important;
+  }
+}
