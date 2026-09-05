@@ -25,6 +25,102 @@ function monthLabel(startDate?: string) {
   return new Intl.DateTimeFormat("pt-BR", { month: "long" }).format(parsed);
 }
 
+function universalGuidance(country: string, city: string, startDate?: string): DestinationGuidance {
+  const destinationCountry = country || "o país de destino";
+  const destinationCity = city || "o destino";
+  const month = monthLabel(startDate);
+
+  return {
+    documents: {
+      badge: destinationCountry,
+      summary: `Revise os requisitos de entrada para ${destinationCountry} de acordo com o passaporte do viajante e as datas da viagem.`,
+      bullets: [
+        `Confirme se o passaporte precisa ter validade mínima adicional para entrar em ${destinationCountry}.`,
+        "Verifique se o seu passaporte exige visto, autorização eletrônica, formulário de entrada ou cadastro prévio.",
+        "Confira regras de trânsito/conexão caso o voo passe por outro país, mesmo sem sair do aeroporto.",
+        "Mantenha reservas de hospedagem, passagem de saída/retorno e comprovantes de viagem acessíveis caso sejam solicitados.",
+        "Confira restrições alfandegárias e regras para medicamentos antes de embarcar.",
+      ],
+      sources: [
+        { label: "IATA Travel Centre · requisitos de viagem", href: "https://www.iatatravelcentre.com/" },
+      ],
+    },
+    apps: {
+      badge: destinationCity,
+      summary: `Deixe os principais aplicativos e reservas prontos para usar em ${destinationCity}.`,
+      bullets: [
+        "Baixe um mapa offline da cidade e salve o endereço da hospedagem.",
+        "Instale o aplicativo oficial do transporte público local quando houver.",
+        "Mantenha companhia aérea, hospedagem e reservas com acesso offline.",
+        "Tenha um tradutor ou pacote de idioma offline se não falar o idioma local.",
+      ],
+    },
+    connectivity: {
+      badge: "Internet & eSIM",
+      summary: `Planeje como terá internet em ${destinationCountry} antes da chegada.`,
+      bullets: [
+        "Confira se seu plano atual inclui roaming no destino e quais são as tarifas.",
+        "Compare eSIM, SIM local e roaming antes da viagem; ative apenas opções compatíveis com seu aparelho.",
+        "Baixe mapas, bilhetes, endereço da hospedagem e documentos importantes para uso offline.",
+        "Evite depender apenas de Wi‑Fi público para pagamentos, autenticação e documentos sensíveis.",
+      ],
+    },
+    money: {
+      badge: "Pagamentos",
+      summary: `Prepare meios de pagamento aceitos em ${destinationCountry} e uma alternativa de emergência.`,
+      bullets: [
+        "Confirme a moeda local e a conversão antes da viagem.",
+        "Confira tarifas de compra internacional, saque e conversão do seu cartão.",
+        "Leve pelo menos dois meios de pagamento separados para contingência.",
+        "Tenha uma pequena quantia em dinheiro se o destino ainda tiver locais com baixa aceitação de cartão.",
+      ],
+    },
+    transport: {
+      badge: destinationCity,
+      summary: `Planeje chegada, deslocamentos e regras locais de transporte em ${destinationCity}.`,
+      bullets: [
+        "Pesquise com antecedência como ir do aeroporto, estação ou porto até a hospedagem.",
+        "Confira se existe cartão de transporte, app oficial ou pagamento contactless local.",
+        "Salve rotas importantes offline para o primeiro dia.",
+        `Se for dirigir em ${destinationCountry}, confirme habilitação aceita, necessidade de permissão internacional, seguro e lado de circulação antes de alugar um veículo.`,
+      ],
+    },
+    packing: {
+      badge: month ? month.charAt(0).toUpperCase() + month.slice(1) : "Mala",
+      summary: month
+        ? `Sua viagem começa em ${month}. Ajuste a mala ao clima esperado e às atividades em ${destinationCity}.`
+        : `Ajuste a mala ao clima, costumes e atividades planejadas em ${destinationCity}.`,
+      bullets: [
+        "Revise a previsão poucos dias antes da viagem para ajustar roupas e calçados.",
+        "Confira o tipo de tomada e a voltagem usada no destino antes de levar adaptadores.",
+        "Separe medicamentos de uso pessoal na embalagem original e confira regras de entrada quando aplicável.",
+        "Leve uma camada versátil para mudanças de temperatura e um calçado confortável para deslocamentos.",
+      ],
+    },
+    insurance: {
+      badge: "Seguro",
+      summary: `Verifique se ${destinationCountry} exige seguro para o seu tipo de entrada e avalie cobertura adequada para a viagem.`,
+      bullets: [
+        "Confira cobertura médica e hospitalar válida durante toda a viagem.",
+        "Verifique cobertura para cancelamento, bagagem, atrasos e atividades planejadas.",
+        "Confirme se alguma cobertura mínima é exigida para visto ou entrada no destino.",
+        "Salve apólice e contato de assistência para acesso offline.",
+      ],
+    },
+    emergency: {
+      badge: "Emergências",
+      summary: `Deixe contatos essenciais de ${destinationCountry} e suas reservas disponíveis mesmo sem internet.`,
+      bullets: [
+        "Confirme o número local de emergência para polícia, ambulância e bombeiros.",
+        "Salve endereço e telefone da hospedagem, voos e principais reservas.",
+        "Mantenha uma cópia digital segura dos documentos separada dos originais.",
+        "Salve o contato da representação consular do seu país mais próxima do destino.",
+        "Compartilhe o roteiro básico e um contato de emergência com alguém de confiança.",
+      ],
+    },
+  };
+}
+
 const UK_GUIDANCE: DestinationGuidance = {
   documents: {
     badge: "Reino Unido",
@@ -125,7 +221,7 @@ export function getDestinationGuidance(country: string, city: string, startDate?
   const normalizedCity = normalize(city);
   const isUK = ["reino unido", "united kingdom", "uk", "gb", "great britain"].includes(normalizedCountry) || normalizedCity === "londres" || normalizedCity === "london";
 
-  if (!isUK) return {};
+  if (!isUK) return universalGuidance(country, city, startDate);
 
   const month = monthLabel(startDate);
   if (!month || !UK_GUIDANCE.packing) return UK_GUIDANCE;
