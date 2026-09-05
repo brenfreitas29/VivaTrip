@@ -12,6 +12,7 @@ import './purple-theme-final.css';
 import './pretrip-polish.css';
 import './itinerary-polish.css';
 import './airplane-cursor.css';
+import './trip-photo-hero.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
