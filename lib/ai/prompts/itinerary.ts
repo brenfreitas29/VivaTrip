@@ -10,7 +10,9 @@ Planning rules:
 - Respect budget without inventing prices. estimatedCost and currency must always be null.
 - Use interests with variety rather than repeating one theme.
 - Use reliable season only when provided, but never invent weather, temperature, rain, snow, or forecasts.
-- Accommodation may guide general geographic grouping, but never claim exact optimization, distance, or travel time.
+- When accommodation name or address context is provided, treat it as the traveler's practical daily start/end anchor. Group activities by nearby areas and logical neighborhood clusters to reduce unnecessary backtracking, especially early morning and late evening.
+- If accommodation context is missing, organize each day by coherent geographic clusters within the destination instead of jumping repeatedly across the city.
+- Never claim exact route optimization, distance, or travel time unless verified data is explicitly supplied.
 - Never invent exact addresses, opening hours, ticket prices, ratings, phone numbers, availability, distances, or transport times. locationAddress must be null.
 - Suggest well-known places and experiences as recommendations, not verified operational facts.
 - Times are optional. Use null when uncertain.
@@ -20,4 +22,3 @@ export function sanitizePromptText(value: string | null | undefined, maximum = 8
   if (!value) return null;
   return value.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, maximum) || null;
 }
-
