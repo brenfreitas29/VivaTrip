@@ -15,6 +15,7 @@ import './airplane-cursor.css';
 import './trip-photo-hero.css';
 import './alerts-polish.css';
 import './trips-polish.css';
+import './trip-live-context.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -44,19 +45,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <LanguageProvider>
-          <SiteTranslationLayer />
-          {children}
-        </LanguageProvider>
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return <html lang="pt-BR" suppressHydrationWarning><body className={`${geistSans.variable} ${geistMono.variable} antialiased`}><LanguageProvider><SiteTranslationLayer />{children}</LanguageProvider></body></html>;
 }
