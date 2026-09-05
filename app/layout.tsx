@@ -16,33 +16,18 @@ import './trip-photo-hero.css';
 import './alerts-polish.css';
 import './trips-polish.css';
 import './trip-live-context.css';
+import './route-map-polish.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-});
+const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
+const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://vivatrip.vercel.app'),
   title: { default: 'VivaTrip — Planeje viagens com inteligência', template: '%s | VivaTrip' },
   description: 'Planeje viagens, organize roteiros, pré-viagem e alertas em um único lugar.',
-  openGraph: {
-    title: 'VivaTrip — O mundo mais perto de você.',
-    description: 'Planeje viagens, organize roteiros, pré-viagem e alertas em um único lugar.',
-    images: [{ url: '/og.png', width: 1732, height: 909, alt: 'VivaTrip — O mundo mais perto de você.' }],
-  },
+  openGraph: { title: 'VivaTrip — O mundo mais perto de você.', description: 'Planeje viagens, organize roteiros, pré-viagem e alertas em um único lugar.', images: [{ url: '/og.png', width: 1732, height: 909, alt: 'VivaTrip — O mundo mais perto de você.' }] },
   robots: { index: true, follow: true },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'VivaTrip — O mundo mais perto de você.',
-    description: 'Planeje viagens, organize roteiros, pré-viagem e alertas em um único lugar.',
-    images: ['/og.png'],
-  },
+  twitter: { card: 'summary_large_image', title: 'VivaTrip — O mundo mais perto de você.', description: 'Planeje viagens, organize roteiros, pré-viagem e alertas em um único lugar.', images: ['/og.png'] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
