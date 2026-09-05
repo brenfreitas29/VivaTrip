@@ -5,6 +5,8 @@ import { FormEvent, useState } from "react";
 import { authErrorMessage } from "@/lib/auth/messages";
 import { createClient } from "@/lib/supabase/client";
 
+const VIVATRIP_SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://vivatrip.vercel.app").replace(/\/+$/, "");
+
 export function SignupForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -38,12 +40,13 @@ export function SignupForm() {
       setLoading(false);
       return;
     }
+
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { full_name: name },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/profile`,
+        emailRedirectTo: `${VIVATRIP_SITE_URL}/auth/callback?next=/profile`,
       },
     });
 
