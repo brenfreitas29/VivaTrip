@@ -1,43 +1,44 @@
-/* Featured destinations — consistent editorial travel cards */
+/* Featured destinations — compact cards matching the homepage reference */
 .home-discovery .destination-marquee {
+  position: relative !important;
   overflow: hidden !important;
-  margin-inline: -3vw !important;
-  padding: 10px 3vw 24px !important;
+  margin-inline: -1vw !important;
+  padding: 6px 1vw 20px !important;
 }
 
 .home-discovery .destination-track {
   display: flex !important;
   align-items: stretch !important;
-  gap: 24px !important;
+  gap: 16px !important;
   width: max-content !important;
 }
 
 .home-discovery .destination-slide {
-  width: clamp(300px, 23vw, 380px) !important;
-  height: 350px !important;
+  width: clamp(195px, 13.2vw, 224px) !important;
+  height: 292px !important;
   display: grid !important;
-  grid-template-rows: 268px 82px !important;
+  grid-template-rows: 210px 82px !important;
   flex: 0 0 auto !important;
   overflow: hidden !important;
   border: 1px solid rgba(68, 49, 151, .10) !important;
-  border-radius: 24px !important;
+  border-radius: 16px !important;
   background: #fff !important;
   color: #17114c !important;
   text-decoration: none !important;
-  box-shadow: 0 14px 36px rgba(39, 28, 91, .10) !important;
+  box-shadow: 0 8px 24px rgba(39, 28, 91, .08) !important;
   transform: translateZ(0);
 }
 
 .home-discovery .destination-slide:hover {
-  transform: translateY(-5px) !important;
-  box-shadow: 0 20px 44px rgba(39, 28, 91, .16) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 14px 30px rgba(39, 28, 91, .13) !important;
 }
 
 .home-discovery .destination-slide > img {
   width: 100% !important;
-  height: 268px !important;
-  min-height: 268px !important;
-  max-height: 268px !important;
+  height: 210px !important;
+  min-height: 210px !important;
+  max-height: 210px !important;
   aspect-ratio: auto !important;
   object-fit: cover !important;
   object-position: center center !important;
@@ -48,20 +49,20 @@
   box-sizing: border-box !important;
   height: 82px !important;
   min-height: 82px !important;
-  padding: 14px 18px !important;
+  padding: 12px 14px !important;
   display: grid !important;
-  grid-template-columns: 32px minmax(0, 1fr) !important;
-  column-gap: 12px !important;
+  grid-template-columns: 28px minmax(0, 1fr) !important;
+  column-gap: 10px !important;
   align-items: center !important;
   background: #fff !important;
 }
 
 .home-discovery .destination-meta .flag {
-  width: 32px !important;
-  height: 32px !important;
+  width: 28px !important;
+  height: 28px !important;
   display: grid !important;
   place-items: center !important;
-  font-size: 22px !important;
+  font-size: 20px !important;
   line-height: 1 !important;
 }
 
@@ -70,7 +71,7 @@
   min-width: 0 !important;
   flex-direction: column !important;
   justify-content: center !important;
-  gap: 4px !important;
+  gap: 5px !important;
 }
 
 .home-discovery .destination-copy strong {
@@ -78,10 +79,10 @@
   margin: 0 !important;
   color: #17114c !important;
   font-family: var(--font-geist-sans), Arial, sans-serif !important;
-  font-size: 19px !important;
+  font-size: 16px !important;
   font-weight: 800 !important;
   line-height: 1.15 !important;
-  letter-spacing: -.35px !important;
+  letter-spacing: -.25px !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -90,33 +91,92 @@
 .home-discovery .destination-copy small {
   display: block !important;
   margin: 0 !important;
-  color: #77718e !important;
+  color: #7b7595 !important;
   font-family: var(--font-geist-sans), Arial, sans-serif !important;
-  font-size: 13.5px !important;
+  font-size: 12.5px !important;
   font-weight: 500 !important;
   line-height: 1.2 !important;
-  letter-spacing: 0 !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
 }
 
-@media (max-width: 760px) {
-  .home-discovery .destination-track { gap: 16px !important; }
+/* Keep every destination image perfectly aligned, even when the source has a different aspect ratio. */
+.home-discovery .destination-slide:nth-child(n) > img {
+  object-fit: cover !important;
+  object-position: 50% 50% !important;
+}
+
+/* Video cards mirror the same compact rhythm used by the destination cards. */
+.home-discovery .video-strip {
+  grid-auto-columns: clamp(195px, 13.2vw, 224px) !important;
+  gap: 16px !important;
+}
+
+.home-discovery .video-card {
+  border-radius: 16px !important;
+}
+
+.home-discovery .video-media {
+  height: 154px !important;
+}
+
+.home-discovery .video-caption {
+  min-height: 62px !important;
+  padding: 10px 12px 12px !important;
+}
+
+@media (min-width: 1450px) {
+  .home-discovery .destination-slide,
+  .home-discovery .video-strip { --destination-card-width: 216px; }
   .home-discovery .destination-slide {
-    width: 286px !important;
-    height: 326px !important;
-    grid-template-rows: 246px 80px !important;
-    border-radius: 20px !important;
+    width: 216px !important;
+  }
+  .home-discovery .video-strip {
+    grid-auto-columns: 216px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .home-discovery .destination-track { gap: 14px !important; }
+  .home-discovery .destination-slide {
+    width: 210px !important;
+    height: 278px !important;
+    grid-template-rows: 198px 80px !important;
   }
   .home-discovery .destination-slide > img {
-    height: 246px !important;
-    min-height: 246px !important;
-    max-height: 246px !important;
+    height: 198px !important;
+    min-height: 198px !important;
+    max-height: 198px !important;
+  }
+  .home-discovery .video-strip {
+    grid-auto-columns: 210px !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .home-discovery .destination-slide {
+    width: 184px !important;
+    height: 254px !important;
+    grid-template-rows: 178px 76px !important;
+    border-radius: 15px !important;
+  }
+  .home-discovery .destination-slide > img {
+    height: 178px !important;
+    min-height: 178px !important;
+    max-height: 178px !important;
   }
   .home-discovery .destination-meta {
-    height: 80px !important;
-    min-height: 80px !important;
-    padding: 13px 15px !important;
+    height: 76px !important;
+    min-height: 76px !important;
+    padding: 10px 11px !important;
+  }
+  .home-discovery .destination-copy strong { font-size: 15px !important; }
+  .home-discovery .destination-copy small { font-size: 12px !important; }
+  .home-discovery .video-strip {
+    grid-auto-columns: 184px !important;
+  }
+  .home-discovery .video-media {
+    height: 142px !important;
   }
 }
