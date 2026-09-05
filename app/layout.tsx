@@ -14,6 +14,7 @@ import './itinerary-polish.css';
 import './airplane-cursor.css';
 import './trip-photo-hero.css';
 import './alerts-polish.css';
+import './trips-polish.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
