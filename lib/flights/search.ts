@@ -204,7 +204,7 @@ async function searchSeatsAero(input: FlightSearchInput): Promise<FlightSearchRe
   const payload = await response.json() as { data?: Array<Record<string, unknown>> };
   const cabinPrefix = input.cabin === 'business' ? 'J' : input.cabin === 'first' ? 'F' : input.cabin === 'premium_economy' ? 'W' : 'Y';
 
-  const rows = await Promise.all((payload.data || []).map(async (item, index) => {
+  const rows: Array<FlightSearchResult | null> = await Promise.all((payload.data || []).map(async (item, index): Promise<FlightSearchResult | null> => {
     const route = item.Route as { OriginAirport?: string; DestinationAirport?: string; Source?: string } | undefined;
     const available = item[`${cabinPrefix}Available`] === true;
     const miles = safeNumber(item[`${cabinPrefix}MileageCost`]);
@@ -219,7 +219,7 @@ async function searchSeatsAero(input: FlightSearchInput): Promise<FlightSearchRe
 
     return {
       id: `seats-${String(item.ID || index)}-${cabinPrefix}`,
-      kind: 'miles' as const,
+      kind: 'miles',
       provider: 'Seats.aero',
       program: typeof item.Source === 'string' ? item.Source : route?.Source,
       airline: airlines,
@@ -233,10 +233,10 @@ async function searchSeatsAero(input: FlightSearchInput): Promise<FlightSearchRe
       originalTaxesCurrency,
       cabin: input.cabin || 'economy',
       direct: item[`${cabinPrefix}Direct`] === true,
-    } satisfies FlightSearchResult;
+    };
   }));
 
-  return rows.filter((row): row is FlightSearchResult => Boolean(row));
+  return rows.filter((row): row is FlightSearchResult => row !== null);
 }
 
 export async function searchFlights(raw: FlightSearchInput): Promise<FlightSearchResponse> {
